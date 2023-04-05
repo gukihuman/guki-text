@@ -1,0 +1,16 @@
+{
+  "prisma.fileWatcher": false,
+  "files.exclude": {
+    ".nuxt": true,
+    ".vscode": true,
+    "css": true,
+    "node_modules": true,
+    "tests": true,
+    ".env": true,
+    ".gitignore": true,
+    "package-lock.json": true,
+    "tsconfig.json": true,
+    "vitest.config.ts": true
+  },
+  "workspace.isHidden": true
+}
