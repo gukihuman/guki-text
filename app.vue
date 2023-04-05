@@ -1,6 +1,6 @@
 <template lang="pug">
 
-div euoueue
+sidebar
 
   //- 📜 when texts are loaded
   //- transition(name="fast")
