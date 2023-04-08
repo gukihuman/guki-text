@@ -29,17 +29,17 @@ div(
     )
     svg-chat-bubble(
       v-if="item.type === 'text'"
-      class="mr-2 scale-75"
+      class="mr-2 scale-[.65]"
     )
     p {{ item.name }}
 
     svg-edit(
       class="ml-auto mr-1 scale-[.65] text-gray-500 hover:text-white rounded-md"
     )
-    div
-      svg-remove(
-        class="scale-75 text-gray-500 hover:text-white rounded-md"
-      )
+
+    svg-remove(
+      class="scale-75 text-gray-500 hover:text-white rounded-md"
+    )
 </template>
 
 <script setup lang="ts">

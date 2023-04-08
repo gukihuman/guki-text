@@ -38,7 +38,7 @@ class States {
     const newItem = {
       id: newId,
       type,
-      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      name: "New " + type,
       parent: "root",
       opened: true,
     }
@@ -69,6 +69,20 @@ class States {
 
   public getChildren(parent: string) {
     return this._states().items.filter((item) => item.parent === parent)
+  }
+
+  public removeAllItems() {
+    this._states().items = [
+      {
+        id: 0,
+        type: "root",
+        name: "root",
+        parent: "",
+        opened: true,
+      },
+    ]
+    this._states().idCounter = 0
+    this._states().activeId = 0
   }
 }
 
