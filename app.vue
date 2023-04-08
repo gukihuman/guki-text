@@ -1,10 +1,12 @@
 <template lang="pug">
 
-sidebar
+div(class="flex flex-row bg-gray-700")
+  sidebar
+  input-area
 
   //- 📜 when texts are loaded
   //- transition(name="fast")
-  //-   loading(v-if="!States().allLoaded")
+  //-   loading(v-if="!states.loaded")
 
 </template>
 
@@ -12,11 +14,12 @@ sidebar
 //
 onMounted(() => {
   //
+  states.loadFromLocalStorage()
 })
 </script>
 
 <style>
-/* 
+/*
 /* "fast" transition */
 .fast-enter-active,
 .fast-leave-active {
@@ -28,8 +31,20 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* disable scrollbar */
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #2b333f;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #424f62;
+}
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
 ::-webkit-scrollbar {
-  display: none;
+  width: 10px;
 }
 </style>

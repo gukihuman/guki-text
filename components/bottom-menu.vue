@@ -3,7 +3,7 @@
 div
   button(
     ref="button"
-    class="w-full text-gray-300 text-md py-2 px-2 transition-colors duration-200 hover:bg-gray-800 hover:text-white rounded-md flex items-center "
+    class="w-full text-gray-300 text-md py-2 px-2 transition-colors duration-200 hover:bg-gray-800 hover:text-white rounded-md flex items-center"
     @click="confirmOn()"
   )
     svg-remove( class="mr-2 scale-75")
@@ -14,7 +14,7 @@ div
     svg-ok(
       v-if="isConfirm"
       class="ml-auto mr-1 scale-[.65] text-gray-400 hover:text-white rounded-md"
-      @click="removeAll(); confirmOff()"
+      @click="removeAll(); confirmOff(); saveToLocalStorage()"
     )
     svg-cancel(
       v-if="isConfirm"
@@ -46,8 +46,10 @@ const confirmOn = () => {
 const removeAll = () => {
   states.removeAllItems()
 }
+const saveToLocalStorage = () => {
+  states.saveToLocalStorage()
+}
 
-// Handle click outside the button
 const handleClickOutside = (event: MouseEvent) => {
   if (button && !button.value.contains(event.target)) {
     document.removeEventListener("click", handleClickOutside)

@@ -8,12 +8,15 @@ class States {
           id: 0,
           type: "root",
           name: "root",
-          parent: "",
+          parent: 0,
           opened: true,
+          text: "",
+          layer: 0,
         },
       ],
       idCounter: 0,
       activeId: 0,
+      loaded: false,
     }),
   })
 
@@ -23,6 +26,10 @@ class States {
 
   public set items(items) {
     this._states().items = items
+  }
+
+  public get loaded() {
+    return this._states().loaded
   }
 
   public get activeId() {
@@ -39,11 +46,14 @@ class States {
       id: newId,
       type,
       name: "New " + type,
-      parent: "root",
+      parent: 0,
       opened: true,
+      text: "",
+      layer: 0,
     }
     this._states().items.push(newItem)
     this._states().idCounter = newId
+    this._states().activeId = newId
   }
 
   public removeItem(id: number) {
@@ -83,6 +93,24 @@ class States {
     ]
     this._states().idCounter = 0
     this._states().activeId = 0
+  }
+
+  public saveToLocalStorage() {
+    if (this._states().loaded) {
+      localStorage.setItem("states", JSON.stringify(this._states()))
+    }
+  }
+  public saveToLocalStorageDebounced = _.debounce(this.saveToLocalStorage, 200)
+
+  public loadFromLocalStorage() {
+    let savedStates: any = localStorage.getItem("states")
+    if (savedStates !== null) {
+      savedStates = JSON.parse(savedStates)
+      this._states().items = savedStates.items
+      this._states().idCounter = savedStates.idCounter
+      this._states().activeId = savedStates.activeId
+    }
+    this._states().loaded = true
   }
 }
 

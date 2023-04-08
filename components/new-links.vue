@@ -16,8 +16,10 @@ div(class="flex items-center gap-2 mb-2")
 //
 const newFolder = () => {
   states.newItem("folder")
+  states.saveToLocalStorage()
 }
 const newText = () => {
   states.newItem("text")
+  states.saveToLocalStorage()
 }
 </script>
