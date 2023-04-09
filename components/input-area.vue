@@ -4,20 +4,29 @@ div(class="flex justify-center w-full bg-gradient-to-b from-[#263242] to-gray-80
     textarea(
       class="px-10 pt-8 w-full h-full outline-none max-w-[800px] bg-gray-700 p-4 text-lg text-gray-100 resize-none scrollbar relative"
       v-model.trim="activeItem.text"
-      :readonly="!states.activeId"
+      :readonly="readonly"
       @input="states.saveToLocalStorageDebounced"
     )
 </template>
 
 <script setup lang="ts">
-const showSidebar = computed(() => {
-  // Set the breakpoint where the sidebar should be hidden
-  const breakpoint = 1024
-  return window.innerWidth >= breakpoint
-})
-
 const activeItem = computed(() => {
   return states.items.find((item) => item.id === states.activeId) || ""
+})
+const readonly = computed(() => {
+  let isReadonly = true
+  if (states.activeId) isReadonly = false
+  if (
+    states.items.find(
+      (item) =>
+        item.id === states.activeId &&
+        states.items.find((item) => item.id === states.activeId).type ===
+          "folder"
+    )
+  ) {
+    isReadonly = true
+  }
+  return isReadonly
 })
 </script>
 <style>

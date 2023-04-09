@@ -1,3 +1,5 @@
+import { an } from "vitest/dist/types-2a26f28c"
+
 class States {
   private _states = defineStore("states", {
     state: (): {
@@ -8,7 +10,7 @@ class States {
           id: 0,
           type: "root",
           name: "root",
-          parent: 0,
+          parent: -1,
           opened: true,
           text: "",
           layer: 0,
@@ -53,10 +55,20 @@ class States {
     }
     this._states().items.push(newItem)
     this._states().idCounter = newId
-    this._states().activeId = newId
+    if (type === "text") this._states().activeId = newId
+    setTimeout(() => {
+      const element = document.getElementById(newId)
+      if (element) element.style.display = "flex"
+    }, 0)
   }
 
   public removeItem(id: number) {
+    const item = states.items.find((item) => item.id === id)
+    if (item.type === "folder") {
+      states
+        .getChildren(item.id)
+        .forEach((child) => states.removeItem(child.id))
+    }
     const index = this._states().items.findIndex((item) => item.id === id)
     if (index !== -1) this._states().items.splice(index, 1)
   }
@@ -77,8 +89,11 @@ class States {
       this._states().items[index].opened = !this._states().items[index].opened
   }
 
-  public getChildren(parent: string) {
-    return this._states().items.filter((item) => item.parent === parent)
+  public getChildren(parentId: number) {
+    const children = this._states().items.filter(
+      (item) => item.parent === parentId
+    )
+    return children
   }
 
   public removeAllItems() {
@@ -87,8 +102,10 @@ class States {
         id: 0,
         type: "root",
         name: "root",
-        parent: "",
+        parent: -1,
         opened: true,
+        text: "",
+        layer: 0,
       },
     ]
     this._states().idCounter = 0
@@ -111,6 +128,49 @@ class States {
       this._states().activeId = savedStates.activeId
     }
     this._states().loaded = true
+
+    setTimeout(() => {
+      states.items.forEach((item) => {
+        const element = document.getElementById(item.id)
+        if (element && item.type !== "root") element.style.display = "flex"
+      })
+      states.getChildren(0).forEach((item) => {
+        if (item.type === "folder" && item.opened) {
+          this.updateFolderChildrenStyle(item)
+        } else if (item.type === "folder") {
+          this.closeFolder(item)
+        }
+      })
+    }, 0)
+  }
+
+  public closeFolder = (item) => {
+    states.getChildren(item.id).forEach((child) => {
+      if (child.type === "folder") this.closeFolder(child)
+      if (child.id === states.activeId) states.activeId = 0
+      const element = document.getElementById(child.id)
+      if (element) element.style.display = "none"
+    })
+  }
+  public updateFolderChildrenStyle = (item) => {
+    if (!item.opened) {
+      states.getChildren(item.id).forEach((child) => {
+        if (child.id === states.activeId) states.activeId = 0
+        const element = document.getElementById(child.id)
+        if (element) element.style.display = "none"
+      })
+    } else {
+      states.getChildren(item.id).forEach((child) => {
+        if (child.type === "folder") {
+          const element = document.getElementById(child.id)
+          if (element) element.style.display = "flex"
+          this.updateFolderChildrenStyle(child)
+        } else {
+          const element = document.getElementById(child.id)
+          if (element) element.style.display = "flex"
+        }
+      })
+    }
   }
 }
 

@@ -10,10 +10,10 @@ div(
     v-for="item in items"
     :key="item.id"
     :id="item.id"
-    class="w-full text-gray-300 text-md py-2 px-2 transition-colors duration-200 hover:bg-gray-800 hover:text-white rounded-md flex items-center "
+    class="w-full text-gray-300 text-md py-2 px-2 transition-colors duration-200 hover:bg-gray-800 hover:text-white rounded-md hidden items-center "
     :class="{'hidden': item.type === 'root', 'bg-gray-700 hover:bg-gray-700': item.id === states.activeId}"
     @click="handleClick(item, $event)"
-    :style="style(item)"
+    :style="styleButton(item)"
 
     draggable="true"
     @dragstart="handleDragStart(item.id, $event)"
@@ -35,7 +35,8 @@ div(
       class="mr-2 scale-[.65]"
     )
     p(
-      v-if="(!isRemoveConfirm && !isRenameConfirm) || item.id !== states.activeId" class="w-32 text-start overflow-hidden"
+      v-if="(!isRemoveConfirm && !isRenameConfirm) || item.id !== states.activeId" class="text-start overflow-hidden"
+      :style="styleName(item)"
     ) {{ item.name }}
     
     svg-edit(
@@ -54,7 +55,8 @@ div(
 
     input(
       v-if="isRenameConfirm && item.id === states.activeId"
-      class="link-name w-32 text-gray-300 bg-transparent border-none border-b-2 border-gray-300 hover:border-gray-400 focus:outline-none focus:border-blue-500"
+      class="link-name text-gray-300 bg-transparent border-none border-b-2 border-gray-300 hover:border-gray-400 focus:outline-none focus:border-blue-500"
+      :style="styleName(item)"
       :value="states.items.find(item => item.id === states.activeId).name"
       @input="states.items.find(item => item.id === states.activeId).name = $event.target.value"
     )
@@ -77,10 +79,17 @@ const isRemoveConfirm = ref(false)
 const isRenameConfirm = ref(false)
 let tempName = ""
 let tempId = 0
-const style = computed(() => {
+const styleButton = computed(() => {
   return (item) => {
     return {
-      marginLeft: item.layer * 10 + "px",
+      paddingLeft: item.layer * 10 + "px",
+    }
+  }
+})
+const styleName = computed(() => {
+  return (item) => {
+    return {
+      width: 140 - item.layer * 10 + "px",
     }
   }
 })
@@ -95,26 +104,31 @@ const handleClickOnCancel = () => {
 }
 
 const handleClickOnRemove = (item) => {
-  isRemoveConfirm.value = true
-  states.activeId = item.id
   setTimeout(() => {
-    document.addEventListener("click", handleClickOutside)
+    isRemoveConfirm.value = true
+    states.activeId = item.id
+    setTimeout(() => {
+      document.addEventListener("click", handleClickOutside)
+    }, 0)
   }, 0)
 }
 
 const handleClickOnEdit = (item) => {
-  tempName = item.name
-  tempId = item.id
-  isRenameConfirm.value = true
-  states.activeId = item.id
-  const button: any = document.getElementById(item.id)
+  if (isRenameConfirm.value) handleClickOnCancel()
   setTimeout(() => {
-    const input = button.querySelector("input")
-    if (input) {
-      input.focus()
-      input.select()
-    }
-    document.addEventListener("click", handleClickOutside)
+    tempName = item.name
+    tempId = item.id
+    isRenameConfirm.value = true
+    states.activeId = item.id
+    const button: any = document.getElementById(item.id)
+    setTimeout(() => {
+      const input = button.querySelector("input")
+      if (input) {
+        input.focus()
+        input.select()
+      }
+      document.addEventListener("click", handleClickOutside)
+    }, 0)
   }, 0)
 }
 
@@ -185,7 +199,7 @@ const handleDrop = (toItemId: number, event: DragEvent) => {
   const fromItemId = parseInt(event.dataTransfer?.getData("text/plain") || "")
   if (isNaN(fromItemId)) return
   const fromItemIndex = states.items.findIndex((item) => item.id === fromItemId)
-  const toItemIndex = states.items.findIndex((item) => item.id === toItemId)
+  let toItemIndex = states.items.findIndex((item) => item.id === toItemId)
   if (
     fromItemIndex === -1 ||
     toItemIndex === -1 ||
@@ -197,11 +211,22 @@ const handleDrop = (toItemId: number, event: DragEvent) => {
   const draggedItem = states.items.find((item) => item.id === fromItemId)
   const dropItem = states.items.find((item) => item.id === toItemId)
 
+  let stop = false
+  const dragOnChild = (draggedItem) => {
+    states.getChildren(draggedItem.id).forEach((child) => {
+      if (child.type === "folder") dragOnChild(child)
+      if (child.id === dropItem.id) stop = true
+    })
+  }
+  dragOnChild(draggedItem)
+  if (stop) return
+
   const [removedItem] = states.items.splice(fromItemIndex, 1)
 
   if (toItemId === -1) {
     states.items.push(removedItem)
     draggedItem.parent = 0
+    toItemIndex = states.items.length() - 1
   } else if (dropItem.type === "text") {
     states.items.splice(toItemIndex, 0, removedItem)
     draggedItem.parent = dropItem.parent
@@ -213,9 +238,43 @@ const handleDrop = (toItemId: number, event: DragEvent) => {
     )
     draggedItem.layer = dropItem.layer + 1
     states.items.splice(parentIndex + 1, 0, removedItem)
+    if (!dropItem.opened) states.closeFolder(dropItem)
   }
+  let indexOffset = 1
+  function moveItem(movedItem) {
+    const parentIndex = states.items.findIndex(
+      (item) => item.id === movedItem.id
+    )
+
+    if (movedItem.type === "folder") {
+      const children = states.getChildren(movedItem.id)
+      children.forEach((child) => {
+        if (fromItemIndex < toItemIndex) {
+          indexOffset = 0
+        }
+
+        const childIndex = states.items.findIndex(
+          (item) => item.id === child.id
+        )
+        const [removedChild] = states.items.splice(childIndex, 1)
+        states.items.splice(parentIndex + indexOffset, 0, removedChild)
+        child.layer = movedItem.layer + 1
+        indexOffset++
+
+        if (child.type === "folder") {
+          const saveOffset = indexOffset
+          indexOffset = 1
+          moveItem(child)
+          indexOffset += saveOffset - 1
+        }
+      })
+    }
+  }
+  moveItem(draggedItem)
+
   states.saveToLocalStorage()
 }
+
 const handleDropEnd = (event: DragEvent) => {
   event.preventDefault()
   const target = event.target as HTMLElement
@@ -223,9 +282,40 @@ const handleDropEnd = (event: DragEvent) => {
   const fromItemId = parseInt(event.dataTransfer?.getData("text/plain") || "")
   if (isNaN(fromItemId)) return
   const fromItemIndex = states.items.findIndex((item) => item.id === fromItemId)
+  const toItemIndex = states.items.length - 1
   if (fromItemIndex === -1) return
   states.items.push(states.items[fromItemIndex])
   states.items.splice(fromItemIndex, 1)
+  const draggedItem = states.items.find((item) => item.id === fromItemId)
+  draggedItem.parent = 0
+  draggedItem.layer = 0
+  function moveItem(movedItem) {
+    const parentIndex = states.items.findIndex(
+      (item) => item.id === movedItem.id
+    )
+
+    if (movedItem.type === "folder") {
+      let indexOffset = 1
+      const children = states.getChildren(movedItem.id)
+      children.forEach((child) => {
+        if (fromItemIndex < toItemIndex) {
+          indexOffset = 0
+        }
+        const childIndex = states.items.findIndex(
+          (item) => item.id === child.id
+        )
+        const [removedChild] = states.items.splice(childIndex, 1)
+        states.items.splice(parentIndex + indexOffset, 0, removedChild)
+        child.layer = movedItem.layer + 1
+        indexOffset++
+
+        if (child.type === "folder") {
+          moveItem(child)
+        }
+      })
+    }
+  }
+  moveItem(draggedItem)
   states.saveToLocalStorage()
 }
 
@@ -237,6 +327,11 @@ const handleClick = (item, event) => {
     (event.target.nodeName === "BUTTON" || event.target.nodeName === "P")
   ) {
     item.opened = !item.opened
+    if (item.opened) {
+      states.updateFolderChildrenStyle(item)
+    } else {
+      states.closeFolder(item)
+    }
   }
   states.saveToLocalStorage()
 }
