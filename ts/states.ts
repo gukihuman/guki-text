@@ -113,8 +113,13 @@ class States {
   }
 
   public saveToLocalStorage() {
+    const save = {
+      items: this._states().items,
+      idCounter: this._states().idCounter,
+      activeId: this._states().activeId,
+    }
     if (this._states().loaded) {
-      localStorage.setItem("states", JSON.stringify(this._states()))
+      localStorage.setItem("states", JSON.stringify(save))
     }
   }
   public saveToLocalStorageDebounced = _.debounce(this.saveToLocalStorage, 200)
