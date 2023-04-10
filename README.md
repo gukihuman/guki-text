@@ -9,7 +9,8 @@ GukiText is a simple web app that stores your texts and makes them easy to acces
 
 ## Usage
 
-To use GukiText, simply go to [link is not available yet] and start typing. Your texts will be saved automatically in the local storage.
+To use GukiText, simply go to [guki-text.vercel.app](https://guki-text.vercel.app/)
+and start typing. Your texts will be saved automatically in the local storage.
 
 ## License
 
