@@ -6,7 +6,8 @@ div(class="h-screen min-w-[260px] h-full bg-gray-900 p-2 flex flex-col")
   bottom-menu(v-if="loaded")
 </template>
 <script setup lang="ts">
-//
-const loaded = computed(() => states.loaded)
-//
+const loaded = computed(() => STATES.echo?.loaded)
+onMounted(() => {
+    globalThis.STATES = STATES
+})
 </script>
