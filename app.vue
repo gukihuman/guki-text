@@ -2,7 +2,6 @@
 div(class="flex flex-row bg-gray-700")
     sidebar
     input-area
-    settings
 
     //- 📜 when texts are loaded
     //- transition(name="fast")
@@ -10,7 +9,7 @@ div(class="flex flex-row bg-gray-700")
 </template>
 <script setup>
 onMounted(async () => {
-    await RECORD.init()
+    // await RECORD.init()
     STATES.loadFromLocalStorage()
 })
 </script>

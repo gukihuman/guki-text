@@ -1,15 +1,6 @@
 <template lang="pug">
 div
     button(
-        mark="api"
-        ref="button"
-        class="w-full text-gray-300 text-md py-2 px-2 transition-colors duration-200 hover:bg-gray-800 hover:text-white rounded-md flex items-center"
-        @click="STATES.echo.settings_open = true"
-    )
-        svg-settings( class="mr-2 scale-75")
-        p API key
-
-    button(
         mark="remove"
         ref="button"
         class="w-full text-gray-300 text-md py-2 px-2 transition-colors duration-200 hover:bg-gray-800 hover:text-white rounded-md flex items-center"
